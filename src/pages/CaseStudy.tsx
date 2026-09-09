@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react'
-import { useParams, Link, Navigate } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { Parallax } from '@/components/Parallax'
+import { WipeLink } from '@/components/transition/WipeLink'
 import { getProject, getNextProject, type CaseSection } from '@/data/projects'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -149,22 +149,20 @@ export default function CaseStudy() {
   const titleWords = project.title.split(' ')
 
   return (
-    <div className="relative bg-[#0A0A0A] text-[#F5F5F5]">
-      <Navbar />
-
+    <div className="relative bg-bg text-text">
       {/* Hero */}
       <section
         ref={heroRef}
         className="relative pt-36 pb-20 md:pt-44 md:pb-28 px-6 overflow-hidden"
       >
         <div className="max-w-6xl mx-auto">
-          <Link
+          <WipeLink
             to="/work"
-            className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-[#8A8A8A] hover:text-[#F5F5F5] transition-colors mb-12"
+            className="mb-12 inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-text-muted transition-colors hover:text-text"
           >
-            <ArrowLeft className="w-3 h-3" />
-            All Work
-          </Link>
+            <ArrowLeft className="h-3 w-3" />
+            Case Studies
+          </WipeLink>
 
           <div className="flex items-center gap-4 mb-10">
             <span className="text-[10px] uppercase tracking-[0.25em] text-[#8A8A8A]">
@@ -355,7 +353,7 @@ export default function CaseStudy() {
           <p className="text-[10px] uppercase tracking-[0.25em] text-[#5A5A5A] mb-6">
             Next Project
           </p>
-          <Link to={`/work/${next.slug}`} className="group block">
+          <WipeLink to={`/work/${next.slug}`} className="group block">
             <div className="grid md:grid-cols-[1fr_auto] items-end gap-8">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-[#8A8A8A] mb-3">
@@ -371,7 +369,7 @@ export default function CaseStudy() {
                 <ArrowUpRight className="w-4 h-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </span>
             </div>
-          </Link>
+          </WipeLink>
         </div>
       </section>
 
