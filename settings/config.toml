@@ -1,0 +1,6 @@
+[general]
+root = "/public"
+page-fallback = "/public/index.html"
+
+[general.log-level]
+level = "info"
