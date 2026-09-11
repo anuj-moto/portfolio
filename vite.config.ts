@@ -10,4 +10,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Allow Cloudflare quick-tunnel hosts through Vite's host check for previews.
+  server: { allowedHosts: ['.trycloudflare.com'] },
+  preview: { allowedHosts: ['.trycloudflare.com'] },
 })

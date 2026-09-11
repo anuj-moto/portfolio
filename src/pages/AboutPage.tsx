@@ -29,7 +29,7 @@ export default function AboutPage() {
           <div className="flex flex-col gap-6">
             <div className="overflow-hidden border border-border grayscale">
               <img
-                src="/anuj.jpeg"
+                src="/anuj.webp"
                 alt="Anuj Shukla"
                 className="aspect-[4/5] w-full object-cover"
                 loading="lazy"

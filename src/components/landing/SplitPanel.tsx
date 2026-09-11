@@ -21,6 +21,13 @@ export function SplitPanel({
   const isActive = active === index
   // idle: all equal · one hovered: it grows, the rest compress
   const grow = active === null ? 1 : isActive ? 2.4 : 0.72
+  // The images are transparent PNG cut-outs of each section's subject, so they
+  // sit on the dark UI with no rectangle/seam — no masks or fades needed.
+  // object-contain shows the whole subject; object-bottom anchors it low.
+  const imageClass = section.imageZoom ?? 'object-contain object-bottom'
+  // per-image brightness: dark subjects stay visible, bright ones (phone, papers)
+  // get dimmed so they read as quiet texture, not a bright pop.
+  const imageBrightness = section.imageBrightness ?? 'brightness-[0.9]'
 
   return (
     <motion.div
@@ -31,6 +38,30 @@ export function SplitPanel({
       style={{ flexGrow: reduced ? 1 : undefined, flexBasis: 0 }}
       className="group relative min-h-[38svh] flex-1 overflow-hidden border-border border-t first:border-t-0 md:min-h-0 md:border-t-0 md:border-l md:first:border-l-0"
     >
+      {/* Hover-reveal — a transparent PNG cut-out of the section's subject.
+          Because it has no background, it sits on the dark UI with no rectangle,
+          seam, or fade needed. Sits behind <WipeLink> (earlier in DOM), desktop-only. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 hidden overflow-hidden opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 motion-reduce:transition-none md:block"
+      >
+        <img
+          src={section.image}
+          alt=""
+          loading="eager"
+          decoding="async"
+          className={`absolute inset-0 h-full w-full grayscale ${imageBrightness} ${imageClass}`}
+        />
+        {/* subtle bottom scrim → keeps the teaser legible over the subject */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-1/4"
+          style={{
+            background:
+              'linear-gradient(0deg,rgba(10,10,10,0.8) 0%,transparent 100%)',
+          }}
+        />
+      </div>
+
       <WipeLink
         to={section.path}
         aria-label={`${section.title} — ${section.teaser}`}
