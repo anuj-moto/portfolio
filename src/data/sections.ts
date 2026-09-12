@@ -7,15 +7,18 @@ export interface SectionMeta {
   title: string
   path: string
   teaser: string
-  // Root-served (public/) hover image. These are transparent PNG cut-outs of the
-  // section's subject, so they sit on the dark UI with no rectangle or seam.
+  // Root-served (public/) hover image — a transparent PNG cut-out of the section's
+  // subject, so it sits on the dark UI with no rectangle or seam.
   image: string
-  // Optional per-image classes (object-fit / object-position). Defaults to
-  // 'object-contain object-bottom' in SplitPanel (whole subject, anchored low).
-  imageZoom?: string
-  // Optional per-image brightness (Tailwind class). Defaults to brightness-[0.9];
-  // bright subjects (papers, phone) override it lower so they read as quiet texture.
+  // Positioning classes for the hover image: height (% of panel) + horizontal anchor.
+  // Default in SplitPanel: 'left-1/2 -translate-x-1/2 h-[58%]'.
+  imageClass?: string
+  // Brightness class — bright subjects (papers, phone) are dimmed so they read as
+  // quiet texture, not a bright pop. Default 'brightness-90'.
   imageBrightness?: string
+  // Which edge the vertical title hugs. Default 'left'; the last panel uses 'right'
+  // so its label sits on the outer edge with the image toward the row's centre.
+  align?: 'left' | 'right'
 }
 
 export const sections: SectionMeta[] = [
@@ -26,7 +29,9 @@ export const sections: SectionMeta[] = [
     path: '/about',
     teaser: 'Product designer. Systems thinker.',
     image: '/anuj_pf_images.png',
-    imageZoom: 'object-contain object-bottom scale-95',
+    // larger (helmet ~middle), shifted slightly right of centre, legs crop at bottom
+    imageClass: 'left-[55%] -translate-x-1/2 translate-y-[4%] h-[70%]',
+    imageBrightness: 'brightness-100',
   },
   {
     key: 'experience',
@@ -36,7 +41,7 @@ export const sections: SectionMeta[] = [
     teaser: 'Four years. Five chapters. One direction.',
     // filename has a space — served from public/, URL-encoded
     image: '/building%20Image_pf.png',
-    imageZoom: 'object-contain object-bottom scale-90',
+    imageClass: 'left-1/2 -translate-x-1/2 translate-y-[3%] h-[56%]',
     imageBrightness: 'brightness-[0.85]',
   },
   {
@@ -46,18 +51,19 @@ export const sections: SectionMeta[] = [
     path: '/work',
     teaser: 'Selected product & design work.',
     image: '/case_studies_pf.png',
-    // floating in the lower-middle (lifted off the bottom)
-    imageZoom: 'object-contain object-bottom scale-90 -translate-y-[14%]',
+    // tight crop (aspect 1.23) — larger, slightly left, bottom-cropped
+    imageClass: 'left-[49%] -translate-x-1/2 translate-y-[6%] h-[52%]',
     imageBrightness: 'brightness-[0.85]',
   },
   {
     key: 'skills',
     index: '04',
-    title: 'Skills',
+    title: 'Skills & Hobbies',
     path: '/skills',
     teaser: 'Craft on one hand. Code on the other.',
-    // rider on the Triumph — fully isolated subject (skills_pf.png = parked bike alt)
     image: '/riding_skill_pf.png',
+    // tight crop (aspect 0.79, tall) — larger, anchored right with a small gap, wheels crop
+    imageClass: 'right-[-2%] translate-y-[4%] h-[70%]',
     imageBrightness: 'brightness-[0.85]',
   },
   {
@@ -67,6 +73,8 @@ export const sections: SectionMeta[] = [
     path: '/contact',
     teaser: 'Have something quiet to build?',
     image: '/contact_pf.png',
+    // larger, anchored right, lifted so it floats above the bottom edge (not cropped)
+    imageClass: 'right-[6%] -translate-y-[8%] h-[48%]',
     imageBrightness: 'brightness-[0.85]',
   },
 ]

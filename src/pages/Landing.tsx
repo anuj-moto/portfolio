@@ -1,12 +1,18 @@
 import { useState } from 'react'
 import { AmbientBackground } from '@/components/AmbientBackground'
 import { SplitPanel } from '@/components/landing/SplitPanel'
+import { MobileLanding } from '@/components/landing/MobileLanding'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { useMobileDetect } from '@/hooks/useMobileDetect'
 import { sections } from '@/data/sections'
 
 export default function Landing() {
+  const { isMobile } = useMobileDetect()
   const [active, setActive] = useState<number | null>(null)
   const reduced = useReducedMotion()
+
+  // Mobile gets the scroll-driven accordion; desktop keeps the hover split-panels.
+  if (isMobile) return <MobileLanding />
 
   return (
     <div className="relative min-h-[100svh] overflow-hidden bg-bg text-text">

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { ArrowUpRight } from 'lucide-react'
 import { WipeLink } from '@/components/transition/WipeLink'
+import { useMobileDetect } from '@/hooks/useMobileDetect'
 import type { SectionMeta } from '@/data/sections'
 
 interface SplitPanelProps {
@@ -19,15 +19,16 @@ export function SplitPanel({
   reduced,
 }: SplitPanelProps) {
   const isActive = active === index
-  // idle: all equal · one hovered: it grows, the rest compress
-  const grow = active === null ? 1 : isActive ? 2.4 : 0.72
-  // The images are transparent PNG cut-outs of each section's subject, so they
-  // sit on the dark UI with no rectangle/seam — no masks or fades needed.
-  // object-contain shows the whole subject; object-bottom anchors it low.
-  const imageClass = section.imageZoom ?? 'object-contain object-bottom'
-  // per-image brightness: dark subjects stay visible, bright ones (phone, papers)
-  // get dimmed so they read as quiet texture, not a bright pop.
-  const imageBrightness = section.imageBrightness ?? 'brightness-[0.9]'
+  // idle: all equal (grow 1) · hovered panel grows to ~36%, the rest settle to ~16%
+  const grow = isActive ? 2.2 : 1
+  const alignRight = section.align === 'right'
+  const { isMobile } = useMobileDetect()
+
+  // Shared image position/appearance (transforms come from imageClass — framer only
+  // animates opacity on mobile so it never fights the Tailwind translate utilities).
+  const imgBase = `pointer-events-none absolute bottom-0 w-auto max-w-none select-none grayscale ${
+    section.imageBrightness ?? 'brightness-90'
+  } ${section.imageClass ?? 'left-1/2 -translate-x-1/2 h-[58%]'}`
 
   return (
     <motion.div
@@ -36,53 +37,58 @@ export function SplitPanel({
       animate={reduced ? undefined : { flexGrow: grow }}
       transition={{ type: 'spring', stiffness: 190, damping: 28 }}
       style={{ flexGrow: reduced ? 1 : undefined, flexBasis: 0 }}
-      className="group relative min-h-[38svh] flex-1 overflow-hidden border-border border-t first:border-t-0 md:min-h-0 md:border-t-0 md:border-l md:first:border-l-0"
+      className="group relative min-h-[38svh] flex-1 overflow-hidden md:min-h-0"
     >
-      {/* Hover-reveal — a transparent PNG cut-out of the section's subject.
-          Because it has no background, it sits on the dark UI with no rectangle,
-          seam, or fade needed. Sits behind <WipeLink> (earlier in DOM), desktop-only. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden overflow-hidden opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 motion-reduce:transition-none md:block"
-      >
+      {/* Inset vertical divider (desktop) / top divider (mobile) — never on the first panel */}
+      {index > 0 && (
+        <>
+          <span
+            aria-hidden
+            className="absolute left-0 bottom-0 top-0 hidden w-px bg-border md:block"
+          />
+          <span
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-px bg-border md:hidden"
+          />
+        </>
+      )}
+
+      {/* Section subject cut-out (grayscale, bottom-anchored).
+          Mobile: fades in on scroll into view. Desktop: reveals on hover. */}
+      {isMobile ? (
+        <motion.img
+          src={section.image}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          decoding="async"
+          initial={reduced ? false : { opacity: 0 }}
+          whileInView={reduced ? undefined : { opacity: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className={`${imgBase} block`}
+        />
+      ) : (
         <img
           src={section.image}
           alt=""
+          aria-hidden
           loading="eager"
           decoding="async"
-          className={`absolute inset-0 h-full w-full grayscale ${imageBrightness} ${imageClass}`}
+          className={`${imgBase} hidden opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100 md:block`}
         />
-        {/* subtle bottom scrim → keeps the teaser legible over the subject */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-1/4"
-          style={{
-            background:
-              'linear-gradient(0deg,rgba(10,10,10,0.8) 0%,transparent 100%)',
-          }}
-        />
-      </div>
+      )}
 
       <WipeLink
         to={section.path}
-        aria-label={`${section.title} — ${section.teaser}`}
-        className="absolute inset-0 flex flex-col justify-between p-5 transition-colors duration-500 hover:bg-surface/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-text/50 md:p-6 lg:p-8"
+        aria-label={section.title}
+        className={`absolute inset-0 flex items-start p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-text/50 md:items-center md:p-6 lg:p-8 ${
+          alignRight ? 'justify-end' : 'justify-start'
+        }`}
       >
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-text-dim transition-colors duration-300 group-hover:text-text-muted">
-            {section.index}
-          </span>
-          <ArrowUpRight className="h-4 w-4 text-text-dim opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        </div>
-
-        <div className="flex flex-1 items-end md:items-center">
-          <h2 className="font-display font-medium tracking-tight text-text-dim transition-colors duration-500 group-hover:text-text text-3xl sm:text-4xl md:text-[clamp(1.5rem,2.4vw,2.75rem)] md:leading-none md:[writing-mode:vertical-rl]">
-            {section.title}
-          </h2>
-        </div>
-
-        <p className="max-w-[24ch] text-xs text-text-muted opacity-70 transition-all duration-500 md:translate-y-2 md:text-sm md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100">
-          {section.teaser}
-        </p>
+        <h2 className="font-display font-medium tracking-tight text-text-muted transition-colors duration-500 group-hover:font-semibold group-hover:text-white text-3xl sm:text-4xl md:text-[clamp(1.6rem,2.6vw,3rem)] md:leading-none md:rotate-180 md:[writing-mode:vertical-rl]">
+          {section.title}
+        </h2>
       </WipeLink>
     </motion.div>
   )
