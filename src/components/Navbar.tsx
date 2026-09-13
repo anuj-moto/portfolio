@@ -106,7 +106,7 @@ export function Navbar() {
           <SheetContent
             side="right"
             showCloseButton={false}
-            className="flex w-full flex-col border-l border-border bg-bg p-0 text-text duration-500 data-[side=right]:data-starting-style:translate-x-full data-[side=right]:data-ending-style:translate-x-full data-starting-style:opacity-100 data-ending-style:opacity-100 sm:max-w-md"
+            className="flex w-full flex-col gap-0 border-l border-border bg-bg p-0 text-text duration-500 data-[side=right]:data-starting-style:translate-x-full data-[side=right]:data-ending-style:translate-x-full data-starting-style:opacity-100 data-ending-style:opacity-100 sm:max-w-md"
           >
             <SheetTitle className="sr-only">Navigation</SheetTitle>
 
@@ -151,7 +151,7 @@ export function Navbar() {
                       transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
                     },
                   }}
-                  className="group flex items-baseline gap-5 border-b border-border py-5"
+                  className="group flex shrink-0 items-baseline gap-5 border-b border-border py-5"
                 >
                   <span className="font-mono text-[10px] tabular-nums text-text-dim">
                     {String(i + 1).padStart(2, '0')}
@@ -176,7 +176,7 @@ export function Navbar() {
                 }}
                 href="/contact"
                 onClick={go('/contact')}
-                className="mt-12 inline-flex h-14 items-center justify-center rounded-full border border-text text-xs font-medium uppercase tracking-[0.2em] text-text transition-colors hover:bg-text hover:text-bg"
+                className="mt-12 inline-flex h-14 shrink-0 items-center justify-center rounded-full border border-text text-xs font-medium uppercase tracking-[0.2em] text-text transition-colors hover:bg-text hover:text-bg"
               >
                 Start a Conversation
               </motion.a>

@@ -80,7 +80,7 @@ export function MobileLanding() {
             <SheetContent
               side="right"
               showCloseButton={false}
-              className="flex w-full flex-col border-l border-border bg-bg p-0 text-text duration-500 data-[side=right]:data-starting-style:translate-x-full data-[side=right]:data-ending-style:translate-x-full data-starting-style:opacity-100 data-ending-style:opacity-100 sm:max-w-sm"
+              className="flex w-full flex-col gap-0 border-l border-border bg-bg p-0 text-text duration-500 data-[side=right]:data-starting-style:translate-x-full data-[side=right]:data-ending-style:translate-x-full data-starting-style:opacity-100 data-ending-style:opacity-100 sm:max-w-sm"
             >
               <SheetTitle className="sr-only">Menu</SheetTitle>
 
@@ -108,7 +108,7 @@ export function MobileLanding() {
                     key={s.key}
                     to={s.path}
                     onClick={() => setMenuOpen(false)}
-                    className="group flex items-baseline gap-4 border-b border-border py-5"
+                    className="group flex shrink-0 items-baseline gap-4 border-b border-border py-5"
                   >
                     <span className="font-mono text-[10px] tabular-nums text-text-dim">
                       {s.index}
