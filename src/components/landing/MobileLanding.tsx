@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowDown, ArrowUpRight } from 'lucide-react'
 import { AmbientBackground } from '@/components/AmbientBackground'
@@ -12,43 +12,41 @@ import {
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { sections } from '@/data/sections'
 
-// Viewport-heights of scroll spent on each section before the next expands.
-const STEP = 0.85
-
 /**
- * Mobile landing: a scroll-driven accordion. The section in focus expands to
- * show its image + "Click to view more"; the others collapse to title rows.
- * A tall scroll track drives which one is active while the accordion stays
- * pinned (sticky), so heights animate without the page jumping.
+ * Mobile landing: a scroll-snap accordion. A dedicated scroll container holds
+ * one full-height snap point per section; the accordion is pinned (sticky) and
+ * reads the active index from that container's own scrollTop/clientHeight — so
+ * one swipe snaps to the next section and the mobile address bar can't break it.
  */
 export function MobileLanding() {
+  const scrollRef = useRef<HTMLDivElement>(null)
   const [active, setActive] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
   const reduced = useReducedMotion()
 
   useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
     let raf = 0
     const onScroll = () => {
       cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => {
-        const step = window.innerHeight * STEP
-        const idx = step > 0 ? Math.round(window.scrollY / step) : 0
+        const h = el.clientHeight
+        const idx = h > 0 ? Math.round(el.scrollTop / h) : 0
         setActive(Math.max(0, Math.min(sections.length - 1, idx)))
       })
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
+    el.addEventListener('scroll', onScroll, { passive: true })
     return () => {
-      window.removeEventListener('scroll', onScroll)
+      el.removeEventListener('scroll', onScroll)
       cancelAnimationFrame(raf)
     }
   }, [])
 
-  const goTo = (i: number) =>
-    window.scrollTo({
-      top: Math.round(window.innerHeight * STEP * i),
-      behavior: 'smooth',
-    })
+  const goTo = (i: number) => {
+    const el = scrollRef.current
+    if (el) el.scrollTo({ top: i * el.clientHeight, behavior: 'smooth' })
+  }
 
   const rowTransition = reduced
     ? { duration: 0 }
@@ -56,10 +54,11 @@ export function MobileLanding() {
 
   return (
     <div
-      className="relative bg-bg text-text"
-      style={{ height: `${(sections.length - 1) * STEP * 100 + 100}svh` }}
+      ref={scrollRef}
+      className="h-[100svh] snap-y snap-mandatory overflow-y-auto overflow-x-hidden overscroll-contain bg-bg text-text"
     >
-      <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden">
+      {/* Pinned accordion — swiping it scrolls the container (native), taps hit links */}
+      <div className="sticky top-0 z-10 flex h-[100svh] snap-start flex-col overflow-hidden bg-bg">
         <AmbientBackground />
 
         <header className="relative z-20 flex h-14 shrink-0 items-center justify-between px-5">
@@ -155,11 +154,6 @@ export function MobileLanding() {
         <div className="relative z-10 flex min-h-0 flex-1 flex-col">
           {sections.map((s, i) => {
             const isActive = i === active
-            // Keep the mobile image big: drop the desktop height and let it fill the
-            // panel, so taller collapsed rows don't shrink the image.
-            const imgPos = (s.imageClass ?? 'left-1/2 -translate-x-1/2 h-[58%]')
-              .replace(/\s*h-\[[^\]]*\]/g, '')
-              .trim()
             const body = (
               <>
                 {isActive && (
@@ -172,23 +166,31 @@ export function MobileLanding() {
                     decoding="async"
                     initial={reduced ? false : { opacity: 0 }}
                     animate={reduced ? undefined : { opacity: 1 }}
-                    transition={{ duration: 0.6, ease: 'easeOut' }}
-                    className={`pointer-events-none absolute bottom-0 w-auto max-w-none select-none grayscale ${
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className={`pointer-events-none absolute inset-x-0 bottom-0 w-full select-none grayscale ${
                       s.imageBrightness ?? 'brightness-90'
-                    } ${imgPos} h-[85%]`}
+                    } ${
+                      s.key === 'about'
+                        ? 'translate-y-[40%]'
+                        : s.key === 'skills'
+                          ? 'translate-y-[30%]'
+                          : ''
+                    }`}
                   />
                 )}
                 <div
                   className={
                     isActive
                       ? 'relative z-10 flex h-full flex-col justify-between p-5'
-                      : 'relative z-10 flex min-h-[6rem] items-center px-5 py-4'
+                      : 'relative z-10 flex min-h-[4rem] items-center px-5 py-4'
                   }
                 >
                   <motion.h2
                     layout="position"
                     className={`font-display font-medium tracking-tight ${
-                      isActive ? 'text-3xl text-white' : 'text-lg text-text-muted'
+                      isActive
+                        ? 'text-3xl text-white drop-shadow-[0_1px_10px_rgba(0,0,0,0.9)]'
+                        : 'text-lg text-text-muted'
                     }`}
                   >
                     {s.title}
@@ -242,6 +244,11 @@ export function MobileLanding() {
           </div>
         )}
       </div>
+
+      {/* Invisible full-height snap points that give the container its scroll length */}
+      {sections.slice(1).map((s) => (
+        <div key={s.key} aria-hidden className="h-[100svh] w-full snap-start" />
+      ))}
     </div>
   )
 }
